@@ -4,6 +4,7 @@ const request = require('supertest');
 const app = require('../lib/app');
 const User = require('../lib/models/User');
 const PostGram = require('../lib/models/PostGram');
+const Comment = require('../lib/models/Comment');
 
 jest.mock('../lib/middleware/ensureAuth.js', () => (req, res, next) => {
   req.user = {
@@ -75,6 +76,30 @@ describe('. routes', () => {
         post: 1,
         comment: 'it is a comment!'
       })
+      .then((res) => {
+        expect(res.body).toEqual({
+          post: 1,
+          comment: 'it is a comment!',
+          comment_by: 'Bob'
+        })
+      })
+  })
+
+  it('deletes a comment', async () => {
+    await PostGram.insert({
+      username: 'Bob',
+      photoURL: 'fakephoto',
+      caption: 'Its a fake photo',
+      tags: `{ fake, news }`,
+    });
+
+    await Comment.insert({
+      post: 1,
+      comment: 'it is a comment!',
+      comment_by: 'Bob'
+    })
+    return request(app)
+      .delete('/api/v1/comment/1')
       .then((res) => {
         expect(res.body).toEqual({
           post: 1,
