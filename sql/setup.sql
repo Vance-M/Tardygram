@@ -14,3 +14,11 @@ CREATE TABLE postgrams (
     caption Text NOT NULL,
     tags TEXT[] NOT NULL
 );
+
+DROP TABLE IF EXISTS comments CASCADE;
+CREATE TABLE comments (
+    comment_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+    comment_by TEXT REFERENCES users(github_username),
+    post INT REFERENCES postgrams(postgram_id),
+    comment TEXT
+)
