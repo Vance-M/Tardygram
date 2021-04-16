@@ -63,6 +63,85 @@ describe('. routes', () => {
       })
   })
 
+  it('gets post by id', async () => {
+    await PostGram.insert({
+      username: 'Bob',
+      photoURL: 'fakephoto',
+      caption: 'Its a fake photo',
+      tags: `{ fake, news }`,
+    });
+    await Comment.insert({
+      post: 1,
+      comment: 'it is a comment!',
+      comment_by: 'Bob'
+    })
+    await Comment.insert({
+      post: 1,
+      comment: 'it is a second comment!',
+      comment_by: 'Bob'
+    })
+    return request(app)
+      .get('/api/v1/posts/1')
+      .then((res) => {
+        expect(res.body).toEqual([{
+          postgram_id: 1,
+          username: 'Bob',
+          comment: 'it is a comment!',
+          comment_by: 'Bob'
+        },{
+          postgram_id: 1,
+          username: 'Bob',
+          comment: 'it is a second comment!',
+          comment_by: 'Bob'
+        }])
+      })
+  })
+
+  it('changes the caption on a postgram in table', async () => {
+    await PostGram.insert({
+      username: 'Bob',
+      photoURL: 'fakephoto',
+      caption: 'Its a fake photo',
+      tags: `{ fake, news }`,
+    });
+    return request(app)
+      .patch('/api/v1/posts/1')
+      .send({
+        caption: 'Its a still a fake photo',
+      })
+      .then((res) => {
+        expect(res.body).toEqual({
+          postgram_id: 1,
+          username: 'Bob',
+          photoURL: 'fakephoto',
+          caption: 'Its a still a fake photo',
+          tags: ['fake', 'news']
+        })
+      })
+  })
+
+
+  it('deletes a post', async () => {
+    await PostGram.insert({
+      username: 'Bob',
+      photoURL: 'fakephoto',
+      caption: 'Its a fake photo',
+      tags: `{ fake, news }`,
+    });
+    return request(app)
+      .delete('/api/v1/posts/1')
+      .then((res) => {
+        expect(res.body).toEqual({
+          postgram_id: 1,
+          username: 'Bob',
+          photoURL: 'fakephoto',
+          caption: 'Its a fake photo',
+          tags: ['fake', 'news']
+        })
+      })
+  })
+
+  // COMMENTS TESTS
   it('gets adds a comment to a post', async () => {
     await PostGram.insert({
       username: 'Bob',
